@@ -23,7 +23,7 @@ const schema = z.object({
 	
 	We can also pass an optional object to catch exceptions and throw a error in case the value the input receives cannot be coerced into a number.
 	*/
-	pin: z.number({invalid_type_error: "Age field is required"}).min(9999, {message: "PIN must be a number greater than or equal to 9999"}),
+	pin: z.number({invalid_type_error: "PIN field is required"}).min(9999, {message: "PIN must be a number greater than or equal to 9999"}),
 });
 
 // This now replaces the interface in the previous code.
