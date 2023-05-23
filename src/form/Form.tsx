@@ -1,20 +1,43 @@
 import { FieldValues, useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 // Components
 import FormBackgroundAndShapes from './FormBackgroundAndShapes';
 /* import FormSocialMediaLinks from './FormSocialMediaLinks'; */
 
-interface FormData {
-	name: string;
-	pin: number;
-}
+/* Using z we can define the schema with all our validation rules */
+
+/* z has an object property/method in which we pass an object with properties that represent our form fields. */
+
+const schema = z.object({
+	/* Our form has a name that is of a string data type and takes a minimum of 3 characters.
+	
+	When specifying our validation rules, we can pass an optional object with the message property*/
+
+	name: z
+		.string()
+		.min(3, { message: 'Username must be at least 3 characters long' }),
+
+	/* Our form also has a pin that is of a number data type that should not be less than 9999 (Coercing a 5-number pin).
+	
+	We can also pass an optional object to catch exceptions and throw a error in case the value the input receives cannot be coerced into a number.
+	*/
+	pin: z.number({invalid_type_error: "Age field is required"}).min(9999, {message: "PIN must be a number greater than or equal to 9999"}),
+});
+
+// This now replaces the interface in the previous code.
+type FormData = z.infer<typeof schema>;
 
 const Form = () => {
 	const {
 		register,
 		handleSubmit,
 		formState: { errors },
-	} = useForm<FormData>();
+	} = useForm<FormData>({
+		/* Pass a configuration object and set resolver to zodResolver function which we call and pass the schema object. */
+		resolver: zodResolver(schema),
+	});
 
 	console.log(errors);
 
@@ -30,27 +53,23 @@ const Form = () => {
 
 				<label htmlFor="username">Username</label>
 				<input
-					{...register('name', { required: true, minLength: 3 })}
+					{...register('name')}
 					type="text"
-					placeholder="Email or Phone"
+					placeholder="Username"
 					id="username"
 				/>
-				{errors.name?.type === 'required' && <p>The name field is required</p>}
-				{errors.name?.type === 'minLength' && (
-					<p>The name field must be at least 3 characters long</p>
-				)}
+				{/* Zod will now generate an error message based on the schema we defined at the beginning of this file */}
+				{errors.name && <p>{errors.name.message}</p>}
 
 				<label htmlFor="password">PIN</label>
 				<input
-					{...register('pin', { required: true, minLength: 6 })}
-					type="password"
+					/* Because React value inputs always returns a string, add a second argument here to instruct react-hook-form to interpret the string value it will receive as a number. */
+					{...register('pin', { valueAsNumber: true })}
+					type="number"
 					placeholder="PIN"
 					id="pin"
 				/>
-				{errors.pin?.type === 'required' && <p>The PIN field is required</p>}
-				{errors.pin?.type === 'minLength' && (
-					<p>The PIN field must be at least 6 characters long</p>
-				)}
+				{errors.pin && <p>{errors.pin.message}</p>}
 
 				<button>Log In</button>
 
